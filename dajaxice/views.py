@@ -46,6 +46,8 @@ class DajaxiceRequest(View):
                 data = {}
 
             response_data = function.call(request, **data)
-            return HttpResponse(response_data, content_type="application/x-json")
+            if not isinstance(response_data, dict) or not response_data.get('success'):
+                log.warning('Dajaxice success=false.\nResponse data: %s', response_data, extra={'request': request})
+            return HttpResponse(json.dumps(response_data), content_type="application/x-json")
         else:
             raise FunctionNotCallableError(name)
