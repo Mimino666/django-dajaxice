@@ -2,6 +2,7 @@ import logging
 import json
 from django.views.generic.base import View
 from django.http import HttpResponse, Http404
+from django.utils import six
 
 from dajaxice.exceptions import FunctionNotCallableError
 from dajaxice.core import dajaxice_functions
@@ -48,6 +49,8 @@ class DajaxiceRequest(View):
             response_data = function.call(request, **data)
             if not isinstance(response_data, dict) or not response_data.get('success'):
                 log.warning('Dajaxice success=false.\nResponse data: %s', response_data, extra={'request': request})
-            return HttpResponse(json.dumps(response_data), content_type="application/x-json")
+            if not isinstance(response_data, six.string_types):
+                response_data = json.dumps(response_data)
+            return HttpResponse(response_data, content_type="application/x-json")
         else:
             raise FunctionNotCallableError(name)
